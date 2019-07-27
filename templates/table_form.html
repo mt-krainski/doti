@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form action="/plot" method="post">
+<table>
+    {% for col_id in row_ids %}
+        <tr>
+            {% for row_id in row_ids %}
+                <td>
+                    <input type="text" name="doti_{{ col_id }}_{{ row_id }}"/>
+                </td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+</table>
+<input type="submit">
+</form>
+</body>
+</html>

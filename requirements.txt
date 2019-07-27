@@ -1,5 +1,6 @@
 black
 flask
 matplotlib
+numpy
 pandas
 python-githooks
