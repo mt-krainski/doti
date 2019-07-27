@@ -1,5 +1,6 @@
 import io
 from string import ascii_uppercase
+from textwrap import wrap
 
 from flask import Flask, render_template, request, Response
 import numpy as np
@@ -39,9 +40,14 @@ def make_plot():
             except ValueError:
                 result_array[i, j] = None
 
+    title = request.form["doti_title"]
+    title = "\n".join(wrap(title, 60))
+    if request.form["doti_subtitle"]:
+        title += f"\n{request.form['doti_subtitle']}"
+
     fig = plot(
         result_array,
-        plot_title=f'{request.form["doti_title"]}',
+        plot_title=title + "\n",
         cmap="Reds_r",
         vmin=ANSWER_RANGE_MIN - 0.5,
         vmax=ANSWER_RANGE_MAX + 0.5,
