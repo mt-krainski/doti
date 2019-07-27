@@ -2,22 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>DOTI plots</title>
 </head>
 <body>
 <form action="/plot" method="post">
+    <p>Title:
+        <input type="text" name="doti_title">
+    </p>
+<p>
+    Input data:
+</p>
+<input type="hidden" value="{{ entries }}" name="entries">
 <table>
     {% for col_id in row_ids %}
         <tr>
             {% for row_id in row_ids %}
                 <td>
-                    <input type="text" name="doti_{{ col_id }}_{{ row_id }}"/>
+                    <input style="width: 2em" type="text" name="doti_{{ col_id }}_{{ row_id }}"/>
                 </td>
             {% endfor %}
         </tr>
     {% endfor %}
 </table>
-<input type="submit">
+    <p><input type="submit"></p>
 </form>
 </body>
 </html>

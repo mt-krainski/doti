@@ -1,26 +1,52 @@
-from flask import Flask, render_template, request
+import io
+from string import ascii_uppercase
+
+from flask import Flask, render_template, request, Response
 import numpy as np
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+
+from doti import plot
 
 app = Flask(__name__)
 
-ROW_IDS = ["A", "B", "C"]
 ANSWER_RANGE_MIN = 1
 ANSWER_RANGE_MAX = 7
 
 
 @app.route("/")
 def table_form():
-    return render_template("table_form.html", row_ids=ROW_IDS)
+    entries = int(request.args.get("entries", 3))
+    return render_template(
+        "table_form.html", row_ids=ascii_uppercase[:entries], entries=entries
+    )
 
 
 @app.route("/plot", methods=["post"])
 def make_plot():
     print(request)
-    result_array = np.zeros(shape=(len(ROW_IDS), len(ROW_IDS)))
-    for i, col_id in enumerate(ROW_IDS):
-        for j, row_id in enumerate(ROW_IDS):
-            result_array[i, j] = int(
-                request.form[f"doti_{col_id}_{row_id}"] or "0"
-            )
-    print(result_array)
-    return "ok"
+    entries = int(request.form["entries"])
+    entry_ids = ascii_uppercase[:entries]
+    result_array = np.zeros(shape=(entries, entries))
+    for i, col_id in enumerate(entry_ids):
+        for j, row_id in enumerate(entry_ids):
+            if request.form[f"doti_{col_id}_{row_id}"] == "":
+                result_array[i, j] = None
+                continue
+            try:
+                result_array[i, j] = int(
+                    request.form[f"doti_{col_id}_{row_id}"]
+                )
+            except ValueError:
+                result_array[i, j] = None
+
+    fig = plot(
+        result_array,
+        plot_title=f'{request.form["doti_title"]}',
+        cmap="Reds_r",
+        vmin=ANSWER_RANGE_MIN - 0.5,
+        vmax=ANSWER_RANGE_MAX + 0.5,
+    )
+
+    output = io.BytesIO()
+    FigureCanvas(fig).print_png(output)
+    return Response(output.getvalue(), mimetype="image/png")
