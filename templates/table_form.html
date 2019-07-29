@@ -5,7 +5,7 @@
     <title>DOTI plots</title>
 </head>
 <body>
-<form action="/plot" method="post">
+<form action="/plot" method="post" name="doti_input" autocomplete="off">
     <p>Title:
         <input type="text" name="doti_title">
     </p>
@@ -17,11 +17,17 @@
 </p>
 <input type="hidden" value="{{ entries }}" name="entries">
 <table>
-    {% for col_id in row_ids %}
+    {% for row_id in row_ids %}
         <tr>
-            {% for row_id in row_ids %}
+            {% for col_id in row_ids %}
                 <td>
-                    <input style="width: 2em" type="text" name="doti_{{ col_id }}_{{ row_id }}"/>
+                    <input
+                        style="width: 2em; text-align: center"
+                        type="text"
+                        name="doti_{{ row_id }}_{{ col_id }}"
+                        oninput="formatCells(this.value, '{{ row_id }}', '{{ col_id }}')"
+                        onfocus="clearCell('{{ row_id }}', '{{ col_id }}')"
+                    />
                 </td>
             {% endfor %}
         </tr>
@@ -30,4 +36,33 @@
     <p><input type="submit"></p>
 </form>
 </body>
+
+<script type="text/javascript">
+
+    function clearCell(row, col) {
+        document.doti_input.elements[
+            "doti_" + row + "_" + col
+        ].value = "";
+    }
+
+    function formatCells(xls, start_row, start_col) {
+        if (!xls.includes("\t") && !xls.includes(" "))
+            return;
+        let lines = xls.split(" ");
+        const row_ids = "{{ row_ids }}";
+        let start_row_id = row_ids.indexOf(start_row);
+        let start_col_id = row_ids.indexOf(start_col);
+        for (let i = 0; i < lines.length; i++) {
+            let columns = lines[i].split("\t");
+            for (let j = 0; j < columns.length; j++) {
+                try {
+                    document.doti_input.elements[
+                    "doti_" + row_ids[i + start_row_id] + "_" + row_ids[j + start_col_id]
+                        ].value = columns[j];
+                } catch (error) {}
+            }
+        }
+    }
+</script>
+
 </html>
