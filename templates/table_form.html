@@ -1,43 +1,107 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>DOTI plots</title>
-</head>
-<body>
-<form action="/plot" method="post" name="doti_input" autocomplete="off">
-    <p>Title:
-        <input type="text" name="doti_title">
-    </p>
-    <p>Subtitle:
-        <input type="text" name="doti_subtitle">
-    </p>
-<p>
-    Input data:
-</p>
+{% extends "base.html" %}
+
+{%  block content %}
+    <div class="container">
+        <br>
+        <div class="row">
+            <div class="col-sm-12" style="text-align: center">
+                <h1>DOTI plots</h1>
+            </div>
+        </div>
+        <br>
+
+<form action="" method="post" name="doti_input" id="doti-input" autocomplete="off">
+    <div class="row mb-2">
+        <div class="input-group">
+            <div class="input-group-prepend" style="flex: 0 0 20%;">
+                <span class="input-group-text" id="" style="width: 100%">Title:</span>
+            </div>
+            <input type="text" name="doti_title" class="form-control">
+        </div>
+    </div>
+    <div class="row mb-5">
+        <div class="input-group">
+            <div class="input-group-prepend" style="flex: 0 0 20%;">
+                <span class="input-group-text" id="" style="width: 100%">Subtitle:</span>
+            </div>
+            <input type="text" name="doti_subtitle" class="form-control">
+        </div>
+    </div>
 <input type="hidden" value="{{ entries }}" name="entries">
-<table>
-    {% for row_id in row_ids %}
-        <tr>
-            {% for col_id in row_ids %}
-                <td>
-                    <input
-                        style="width: 2em; text-align: center"
-                        type="text"
-                        name="doti_{{ row_id }}_{{ col_id }}"
-                        oninput="formatCells(this.value, '{{ row_id }}', '{{ col_id }}')"
-                        onfocus="clearCell('{{ row_id }}', '{{ col_id }}')"
-                    />
-                </td>
-            {% endfor %}
-        </tr>
-    {% endfor %}
-</table>
-    <p><input type="submit"></p>
+<div class="row align-items-center">
+    <div class="col-md-6 text-center">
+    <table class="table text-center">
+        <th colspan="{{ entries }}">Input data</th>
+        {% for row_id in row_ids %}
+            <tr>
+                {% for col_id in row_ids %}
+                    <td>
+                        <input
+                            style="text-align: center; width: 96%; margin: 2%"
+                            type="text"
+                            class="form-control"
+                            name="doti_{{ row_id }}_{{ col_id }}"
+                            oninput="formatCells(this.value, '{{ row_id }}', '{{ col_id }}')"
+                            onfocus="clearCell('{{ row_id }}', '{{ col_id }}')"
+                        />
+                    </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    <tr>
+        <td colspan="{{ entries }}">
+            <input class="btn btn-primary" type="submit">
+        </td>
+    </tr>
+    </table>
+</div>
+
+    <div class="col-md-6 text-center mb-5">
+        <img
+            id="result-plot"
+            src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/White_square_50%25_transparency.svg/1024px-White_square_50%25_transparency.svg.png"
+            style="width: 100%"
+            alt="picture here"
+        >
+    </div>
 </form>
-</body>
+    <div id="result"></div>
+</div>
+{% endblock %}
+
+{% block script %}
 
 <script type="text/javascript">
+
+    $.fn.serializeObject = function(){
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function() {
+            if (o[this.name] !== undefined) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
+    };
+
+    $(function() {
+        $('#doti-input').submit(function() {
+            var http = new XMLHttpRequest();
+            http.open("POST", "/plot", true);
+            http.setRequestHeader("Content-type","application/json");
+            http.send(JSON.stringify($('#doti-input').serializeObject()));
+            http.onload = function() {
+                document.getElementById("result-plot").src='data:image/png;base64,'+http.responseText;
+            };
+            return false;
+        });
+    });
+
 
     function clearCell(row, col) {
         document.doti_input.elements[
@@ -64,5 +128,7 @@
         }
     }
 </script>
+
+{% endblock %}
 
 </html>

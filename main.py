@@ -1,4 +1,6 @@
+import base64
 import io
+import json
 from string import ascii_uppercase
 from textwrap import wrap
 
@@ -24,26 +26,24 @@ def table_form():
 
 @app.route("/plot", methods=["post"])
 def make_plot():
-    print(request)
-    entries = int(request.form["entries"])
+    form = request.json
+    entries = int(form["entries"])
     entry_ids = ascii_uppercase[:entries]
     result_array = np.zeros(shape=(entries, entries))
     for i, col_id in enumerate(entry_ids):
         for j, row_id in enumerate(entry_ids):
-            if request.form[f"doti_{col_id}_{row_id}"] == "":
+            if form[f"doti_{col_id}_{row_id}"] == "":
                 result_array[i, j] = None
                 continue
             try:
-                result_array[i, j] = int(
-                    request.form[f"doti_{col_id}_{row_id}"]
-                )
+                result_array[i, j] = int(form[f"doti_{col_id}_{row_id}"])
             except ValueError:
                 result_array[i, j] = None
 
-    title = request.form["doti_title"]
+    title = form["doti_title"]
     title = "\n".join(wrap(title, 60))
-    if request.form["doti_subtitle"]:
-        title += f"\n{request.form['doti_subtitle']}"
+    if form["doti_subtitle"]:
+        title += f"\n{form['doti_subtitle']}"
 
     fig = plot(
         result_array,
@@ -55,4 +55,4 @@ def make_plot():
 
     output = io.BytesIO()
     FigureCanvas(fig).print_png(output)
-    return Response(output.getvalue(), mimetype="image/png")
+    return Response(base64.b64encode(output.getvalue()), mimetype="image/png")
