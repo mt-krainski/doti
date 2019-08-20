@@ -96,7 +96,9 @@
             http.setRequestHeader("Content-type","application/json");
             http.send(JSON.stringify($('#doti-input').serializeObject()));
             http.onload = function() {
-                document.getElementById("result-plot").src='data:image/png;base64,'+http.responseText;
+                document
+                    .getElementById("result-plot")
+                    .src='data:image/png;base64,'+http.responseText;
             };
             return false;
         });
